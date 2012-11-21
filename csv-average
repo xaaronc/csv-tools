@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+
+import sys
+import math
+import operator
+
+input_sep = ','
+
+
+def collect_inputs():
+
+    files = [file(x) for x in sys.argv[1:] if x != '-']
+    if len(sys.argv) <= 1 or '-' in sys.argv or not sys.stdin.isatty():
+        files.append(sys.stdin)
+
+    return files
+
+
+def skip_line(line):
+    return not line or line.startswith('#')
+
+
+def read_file(fin):
+
+    input_data = []
+
+    for line in fin:
+
+        line = line.strip()
+        if line.endswith(input_sep):
+            line = line[0:-1]
+
+        if skip_line(line):
+            continue
+
+        data = [float(x or 0) for x in line.split(input_sep)]
+        input_data.append(data)
+
+    return input_data
+
+
+opdef = lambda op, dfl: lambda x, y: op((x or dfl), (y or dfl))
+sqdiff = lambda x, y: opdef(operator.sub, 0)(x, y) ** 2
+sumlists = lambda a, b: map(opdef(operator.add, 0), a, b)
+
+def averages(input_data):
+
+    npoints = len(input_data)
+    sums = reduce(sumlists, input_data)
+    avgs = [x / npoints for x in sums]
+    return avgs
+
+
+def stdev(input_data, avgs):
+
+    sqdiff_avg = lambda a: map(sqdiff, a, avgs)
+    npoints = len(input_data)
+    sumsqdiff = reduce(sumlists, map(sqdiff_avg, input_data))
+    stdevs = [math.sqrt(x / max(npoints-1,1)) for x in sumsqdiff]
+    return stdevs
+
+
+liststr = lambda a: [("%.3lf" % x) for x in a]
+
+def main():
+
+    input_files = collect_inputs()
+    all_avgs = []
+
+    for fin in input_files:
+        data = read_file(fin)
+        avgs = averages(data)
+        sds = stdev(data, avgs)
+
+        if len(input_files) > 1:
+            print "==> %s <==" % fin.name
+        print "avg:", input_sep.join(liststr(avgs))
+        print "stdev:", input_sep.join(liststr(sds))
+        if len(input_files) > 1:
+            print
+
+        all_avgs.append(avgs)
+
+    # print the average and stdev of the per-file averages
+    if len(input_files) > 1:
+        avgs = averages(all_avgs)
+        sds = stdev(all_avgs, avgs)
+        print "==> <totals> <=="
+        print "avg:", input_sep.join(liststr(avgs))
+        print "stdev:", input_sep.join(liststr(sds))
+
+
+if __name__ == '__main__':
+    main()
+
