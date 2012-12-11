@@ -84,10 +84,11 @@ def main():
 
     # print the average and stdev of the per-file averages
     if len(input_files) > 1:
+        avgs = averages(all_avgs)
         print "==> <totals> <=="
         print input_sep.join(liststr(avgs))
         if do_stdev:
-            print input_sep.join(liststr(stdev(all_avgs, avgs)))
+            print input_sep.join(liststr(stdev(all_avgs,avgs)))
 
 
 if __name__ == '__main__':
