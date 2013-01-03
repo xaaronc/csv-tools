@@ -43,5 +43,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except IOError:
+        # ignore e.g. broken pipe if we don't eat all the output
+        pass
 
